@@ -1,0 +1,22 @@
+# Ingress (потрібне доповнення minikube: ingress). Правило без host - працює за IP/адресою ingress.
+# Для Docker-драйвера на Windows/macOS: minikube tunnel, потім http://127.0.0.1
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: web
+  namespace: task-manager
+  labels:
+    app: web
+    app.kubernetes.io/part-of: task-manager
+spec:
+  ingressClassName: nginx
+  rules:
+    - http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: web
+                port:
+                  number: 80

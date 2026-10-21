@@ -1,0 +1,16 @@
+# Сховище для PostgreSQL (компонент зі станом).
+# storageClassName не вказано - використовується StorageClass minikube за замовчуванням (standard).
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: db-data
+  namespace: task-manager
+  labels:
+    app: db
+    app.kubernetes.io/part-of: task-manager
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi

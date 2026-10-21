@@ -1,0 +1,14 @@
+# Несекретна конфігурація застосунку (підключається як змінні оточення).
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tasks-config
+  namespace: task-manager
+  labels:
+    app.kubernetes.io/part-of: task-manager
+data:
+  APP_TITLE: "Менеджер задач (Kubernetes)"  # заголовок у веб-інтерфейсі
+  API_URL: "http://api:5000"                # адреса API всередині кластера (DNS-ім'я Service)
+  LOG_LEVEL: "INFO"                         # рівень логування web та api
+  POSTGRES_DB: "tasks"                      # ім'я бази даних
+  POSTGRES_USER: "tasks"                    # користувач бази даних

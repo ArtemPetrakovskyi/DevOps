@@ -1,0 +1,19 @@
+# Доступ до веб-інтерфейсу: усередині кластера - http://web:80,
+# з хоста - через NodePort 30080 (minikube service web -n task-manager).
+apiVersion: v1
+kind: Service
+metadata:
+  name: web
+  namespace: task-manager
+  labels:
+    app: web
+    app.kubernetes.io/part-of: task-manager
+spec:
+  type: NodePort
+  selector:
+    app: web
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+      nodePort: 30080

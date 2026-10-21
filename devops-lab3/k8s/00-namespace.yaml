@@ -1,0 +1,7 @@
+# Окремий namespace проєкту. Усі інші об'єкти створюються лише в ньому.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: task-manager
+  labels:
+    app.kubernetes.io/part-of: task-manager
