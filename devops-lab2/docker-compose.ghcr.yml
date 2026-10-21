@@ -1,0 +1,42 @@
+# Запуск проєкту з образів, опублікованих CI у GitHub Container Registry.
+# Використання (з кореня проєкту):
+#   Linux/macOS:  GHCR_REPO=<owner>/<repo> docker compose -f docker-compose.ghcr.yml up -d
+#   PowerShell:   $env:GHCR_REPO="<owner>/<repo>"; docker compose -f docker-compose.ghcr.yml up -d
+# <owner>/<repo> — малими літерами, як у GitHub (наприклад ivan-petrenko/devops-lab1).
+# Тег образу можна змінити: IMAGE_TAG=sha-<повний commit sha> (за замовчуванням latest).
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: tasks
+      POSTGRES_PASSWORD: tasks_pass
+      POSTGRES_DB: tasks
+    volumes:
+      - pgdata_ghcr:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tasks -d tasks"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    image: ghcr.io/${GHCR_REPO:?Вкажіть GHCR_REPO=owner/repo}-api:${IMAGE_TAG:-latest}
+    environment:
+      DATABASE_URL: postgresql://tasks:tasks_pass@db:5432/tasks
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "5001:5000"
+
+  web:
+    image: ghcr.io/${GHCR_REPO:?Вкажіть GHCR_REPO=owner/repo}-web:${IMAGE_TAG:-latest}
+    environment:
+      API_URL: http://api:5000
+    depends_on:
+      - api
+    ports:
+      - "5000:5000"
+
+volumes:
+  pgdata_ghcr:

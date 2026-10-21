@@ -1,0 +1,48 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: tasks-db
+    environment:
+      POSTGRES_USER: tasks
+      POSTGRES_PASSWORD: tasks_pass
+      POSTGRES_DB: tasks
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tasks -d tasks"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks:
+      - backend
+
+  api:
+    build: ./api
+    container_name: tasks-api
+    environment:
+      DATABASE_URL: postgresql://tasks:tasks_pass@db:5432/tasks
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "5001:5000"
+    networks:
+      - backend
+
+  web:
+    build: ./web
+    container_name: tasks-web
+    environment:
+      API_URL: http://api:5000
+    depends_on:
+      - api
+    ports:
+      - "5000:5000"
+    networks:
+      - backend
+
+volumes:
+  pgdata:
+
+networks:
+  backend:
