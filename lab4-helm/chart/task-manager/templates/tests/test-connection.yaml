@@ -1,0 +1,27 @@
+# DVO-L4-3C8B52
+{{- if .Values.tests.enabled }}
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {{ include "task-manager.fullname" . }}-test
+  labels:
+    {{- include "task-manager.labels" (dict "ctx" . "component" "test") | nindent 4 }}
+  annotations:
+    {{- include "task-manager.annotations" . | nindent 4 }}
+    "helm.sh/hook": test
+    "helm.sh/hook-delete-policy": before-hook-creation
+spec:
+  restartPolicy: Never
+  containers:
+    - name: curl
+      image: "{{ .Values.tests.image.repository }}:{{ .Values.tests.image.tag }}"
+      command:
+        - sh
+        - -c
+        - |
+          set -e
+          curl -fsS http://{{ include "task-manager.fullname" . }}-api:{{ .Values.api.service.port }}/health
+          echo
+          curl -fsS http://{{ include "task-manager.fullname" . }}-web:{{ .Values.web.service.port }}/health
+          echo
+{{- end }}

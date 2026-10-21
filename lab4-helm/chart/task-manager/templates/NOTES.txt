@@ -1,0 +1,21 @@
+# DVO-L4-3C8B52
+Реліз «{{ .Release.Name }}» встановлено в namespace «{{ .Release.Namespace }}» (ревізія {{ .Release.Revision }}).
+
+Як відкрити застосунок:
+{{- if .Values.ingress.enabled }}
+  Ingress увімкнено (клас {{ .Values.ingress.className }}).
+{{- if .Values.ingress.host }}
+  Відкрийте http://{{ .Values.ingress.host }}{{ .Values.ingress.path }}
+{{- else }}
+  Виконайте `minikube tunnel` (Docker-драйвер на Windows/macOS) і відкрийте http://127.0.0.1/
+  або адресу з: kubectl get ingress -n {{ .Release.Namespace }}
+{{- end }}
+{{- else if eq .Values.web.service.type "NodePort" }}
+  minikube service {{ include "task-manager.fullname" . }}-web -n {{ .Release.Namespace }}
+{{- else }}
+  kubectl port-forward svc/{{ include "task-manager.fullname" . }}-web 8080:{{ .Values.web.service.port }} -n {{ .Release.Namespace }}
+  Після цього відкрийте http://localhost:8080
+{{- end }}
+
+Перевірити стан:   kubectl get all -n {{ .Release.Namespace }}
+Запустити тест:    helm test {{ .Release.Name }} -n {{ .Release.Namespace }}

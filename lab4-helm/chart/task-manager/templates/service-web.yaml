@@ -1,0 +1,20 @@
+# DVO-L4-3C8B52
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "task-manager.fullname" . }}-web
+  labels:
+    {{- include "task-manager.labels" (dict "ctx" . "component" "web") | nindent 4 }}
+  annotations:
+    {{- include "task-manager.annotations" . | nindent 4 }}
+spec:
+  type: {{ .Values.web.service.type }}
+  selector:
+    {{- include "task-manager.selectorLabels" (dict "ctx" . "component" "web") | nindent 4 }}
+  ports:
+    - name: http
+      port: {{ .Values.web.service.port }}
+      targetPort: http
+      {{- if and (eq .Values.web.service.type "NodePort") .Values.web.service.nodePort }}
+      nodePort: {{ .Values.web.service.nodePort }}
+      {{- end }}

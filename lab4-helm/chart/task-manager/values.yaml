@@ -1,0 +1,102 @@
+# DVO-L4-3C8B52
+# Значення за замовчуванням відповідають середовищу РОЗРОБКИ.
+# Реальні паролі тут не зберігаються (див. secret.postgresPassword).
+
+nameOverride: ""
+fullnameOverride: ""
+
+# Єдина система маркування кафедри (додаток А до методичних вказівок).
+# Значення label має бути ASCII (вимога Kubernetes до значень міток),
+# тому «гарбуз» записано транслітерацією; кирилична форма — в анотації.
+mascot:
+  label: harbuz
+
+# --- Параметри конфігурації застосунку (потрапляють у ConfigMap) ---
+config:
+  appTitle: "Менеджер задач (Kubernetes)"
+  logLevel: "INFO"
+  postgresDb: "tasks"
+  postgresUser: "tasks"
+
+# --- Секрет ---
+# Порожнє значення = пароль генерується автоматично під час першого встановлення
+# і повторно використовується при оновленнях (lookup). Свій пароль передавайте через
+#   --set secret.postgresPassword=...   (не записуйте його у файли значень!)
+secret:
+  postgresPassword: ""
+
+# --- REST API ---
+api:
+  replicaCount: 2
+  image:
+    repository: tasks-api
+    tag: "1.0.0"
+    pullPolicy: IfNotPresent
+  containerPort: 5000
+  service:
+    type: ClusterIP
+    port: 5000
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 250m
+      memory: 256Mi
+
+# --- Веб-інтерфейс ---
+web:
+  replicaCount: 2
+  image:
+    repository: tasks-web
+    tag: "1.0.0"
+    pullPolicy: IfNotPresent
+  containerPort: 5000
+  service:
+    type: NodePort
+    port: 80
+    # nodePort: null — Kubernetes обере порт сам (дозволяє встановити чарт двічі).
+    nodePort: null
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 250m
+      memory: 256Mi
+
+# --- PostgreSQL ---
+db:
+  replicaCount: 1        # лише 1: том ReadWriteOnce не можна змонтувати в кілька подів
+  image:
+    repository: postgres
+    tag: "16-alpine"
+    pullPolicy: IfNotPresent
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 256Mi
+  persistence:
+    enabled: true        # false -> emptyDir (дані втрачаються разом із подом)
+    size: 1Gi
+    storageClass: ""     # порожньо = StorageClass за замовчуванням (minikube: standard)
+
+# --- Ingress (необов'язковий об'єкт) ---
+ingress:
+  enabled: false
+  className: nginx
+  host: ""               # порожньо = правило без host
+  path: /
+
+# --- Хуки та тести ---
+hooks:
+  preUpgrade:
+    enabled: true        # Job, що перевіряє доступність БД перед оновленням
+tests:
+  enabled: true
+  image:
+    repository: curlimages/curl
+    tag: "8.10.1"

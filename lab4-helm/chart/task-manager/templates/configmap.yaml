@@ -1,0 +1,15 @@
+# DVO-L4-3C8B52
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "task-manager.fullname" . }}-config
+  labels:
+    {{- include "task-manager.labels" (dict "ctx" . "component" "config") | nindent 4 }}
+  annotations:
+    {{- include "task-manager.annotations" . | nindent 4 }}
+data:
+  APP_TITLE: {{ .Values.config.appTitle | quote }}
+  API_URL: {{ printf "http://%s-api:%v" (include "task-manager.fullname" .) .Values.api.service.port | quote }}
+  LOG_LEVEL: {{ .Values.config.logLevel | quote }}
+  POSTGRES_DB: {{ .Values.config.postgresDb | quote }}
+  POSTGRES_USER: {{ .Values.config.postgresUser | quote }}

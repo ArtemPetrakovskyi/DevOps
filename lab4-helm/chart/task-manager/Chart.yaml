@@ -1,0 +1,15 @@
+# DVO-L4-3C8B52
+apiVersion: v2
+name: task-manager
+description: Helm-чарт застосунку «Менеджер задач» (web + api + PostgreSQL) з лабораторної роботи №3
+type: application
+# version — версія самого чарта (змінюється, коли змінюються шаблони/значення чарта)
+version: 0.1.0
+# appVersion — версія застосунку (теги образів tasks-api/tasks-web), що пакується в чарт
+appVersion: "1.0.0"
+keywords:
+  - devops
+  - kubernetes
+  - task-manager
+maintainers:
+  - name: student

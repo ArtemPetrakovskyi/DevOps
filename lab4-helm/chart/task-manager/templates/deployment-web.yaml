@@ -1,0 +1,72 @@
+# DVO-L4-3C8B52
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "task-manager.fullname" . }}-web
+  labels:
+    {{- include "task-manager.labels" (dict "ctx" . "component" "web") | nindent 4 }}
+  annotations:
+    {{- include "task-manager.annotations" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.web.replicaCount }}
+  minReadySeconds: 5
+  revisionHistoryLimit: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      {{- include "task-manager.selectorLabels" (dict "ctx" . "component" "web") | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "task-manager.labels" (dict "ctx" . "component" "web") | nindent 8 }}
+      annotations:
+        {{- include "task-manager.annotations" . | nindent 8 }}
+        # зміна конфігурації/секрету перезапускає поди
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+    spec:
+      enableServiceLinks: false
+      containers:
+        - name: web
+          image: "{{ .Values.web.image.repository }}:{{ .Values.web.image.tag }}"
+          imagePullPolicy: {{ .Values.web.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.web.containerPort }}
+          env:
+            - name: APP_TITLE
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "task-manager.fullname" . }}-config
+                  key: APP_TITLE
+            - name: API_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "task-manager.fullname" . }}-config
+                  key: API_URL
+            - name: LOG_LEVEL
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "task-manager.fullname" . }}-config
+                  key: LOG_LEVEL
+          resources:
+            {{- toYaml .Values.web.resources | nindent 12 }}
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 3
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          lifecycle:
+            preStop:
+              exec:
+                command: ["sleep", "5"]

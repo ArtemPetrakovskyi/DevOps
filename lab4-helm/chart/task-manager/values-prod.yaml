@@ -1,0 +1,37 @@
+# DVO-L4-3C8B52
+# Продуктове середовище: більше реплік і ресурсів, стабільний тег, Ingress увімкнено.
+# Пароль БД тут НЕ вказується: передайте --set secret.postgresPassword=... або залиште
+# порожнім (буде згенеровано автоматично).
+api:
+  replicaCount: 3
+  image:
+    tag: "1.1.0"
+  resources:
+    requests:
+      cpu: 200m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+web:
+  replicaCount: 3
+  image:
+    tag: "1.1.0"
+  service:
+    type: ClusterIP
+  resources:
+    requests:
+      cpu: 200m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+db:
+  persistence:
+    size: 5Gi
+ingress:
+  enabled: true
+  className: nginx
+config:
+  appTitle: "Менеджер задач (PROD)"
+  logLevel: "WARNING"

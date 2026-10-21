@@ -1,0 +1,20 @@
+# DVO-L4-3C8B52
+{{- if .Values.db.persistence.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "task-manager.fullname" . }}-db-data
+  labels:
+    {{- include "task-manager.labels" (dict "ctx" . "component" "db") | nindent 4 }}
+  annotations:
+    {{- include "task-manager.annotations" . | nindent 4 }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  {{- if .Values.db.persistence.storageClass }}
+  storageClassName: {{ .Values.db.persistence.storageClass | quote }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.db.persistence.size | quote }}
+{{- end }}
